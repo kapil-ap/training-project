@@ -51,7 +51,7 @@ router.get("/:emp_id", async (req, res, next) => {
       [emp_id]
     );
 
-    res.status(201).json(getEmployee.rows);
+    res.status(200).json(getEmployee.rows);
   } catch (error) {
     res.status(500).json("Internal Server Error");
   }
@@ -87,7 +87,7 @@ router.put("/:emp_id", async (req, res, next) => {
   try {
     const { first_name, last_name, email, phone, pid } = req.body;
     const emp_id = req.params.emp_id;
-    // console.log({first_name,last_name,email,phone,pid});
+    console.log({first_name,last_name,email,phone,pid});
     await pool.query(
       `UPDATE emp_app.employee SET first_name=$1, last_name=$2, email=$3, phone=$4, pid=$5 WHERE emp_id=$6;`,
       [first_name, last_name, email, phone, pid, emp_id]

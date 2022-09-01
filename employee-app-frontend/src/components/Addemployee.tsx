@@ -18,8 +18,8 @@ type Project = {
 
 const Addemployee = () => {
   const [employee, setEmployee] = useState<Employee>({
-    first_name: "",
-    last_name: "",
+    first_name:'',
+    last_name: '',
     email: "",
     phone: "",
     pid: 0,

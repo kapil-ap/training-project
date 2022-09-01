@@ -12,6 +12,7 @@ const useEmpServices = (request: Promise<Response>) => {
           status: response.status,
         }))
         .then((res) => {
+          console.log(res.data);
           setEmpData(res.data);
         })
     );

@@ -1,11 +1,12 @@
-import React from "react";
+import React, { MouseEventHandler, useState } from "react";
+import Edit from "./Edit";
 type Employee = {
   emp_id: number;
   first_name: string;
   last_name:string;
   email: string;
   phone: string;
-  pid:string;
+  pid:number;
   project_name: string;
 
 };
@@ -14,49 +15,74 @@ type EmployeeListProps = {
   employees: Employee[];
 };
 
+
+
 const EmployeeList = (props: EmployeeListProps) => {
   const { employees } = props;
+  const [editing,setEditing] = useState(false);
+  const [selectedEmployee,setSelectedEmployee] =  useState<Employee>({
+    emp_id:0,
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    pid:0,
+    project_name: "",
+  });
+  const handleEdit = (employee:Employee) => { 
+    setEditing(true);
+    setSelectedEmployee(employee);
+   }
   return (
-    <div className="contain-table">
-      <table className="striped-table">
-        <thead>
-          <tr>
-            <th>No.</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Project Name</th>
-            <th colSpan={2} className="text-center">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {employees.length > 0 ? (
-            employees.map((employee, i) => (
-              <tr key={employee.emp_id}>
-                <td>{i + 1}</td>
-                <td>{employee.first_name}</td>
-                <td>{employee.last_name}</td>
-                <td>{employee.email}</td>
-                <td>{employee.phone} </td>
-                <td>{employee.project_name} </td>
-                <td className="text-right">
-                  <button className="button muted-button">Edit</button>
-                </td>
-                <td className="text-left">
-                  <button className="button muted-button">Delete</button>
-                </td>
-              </tr>
-            ))
-          ) : (
+    <div className="container">
+      {!editing && (<div className="contain-table">
+        <table className="striped-table">
+          <thead>
             <tr>
-              <td colSpan={7}>No Employees</td>
+              <th>No.</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Project Name</th>
+              <th colSpan={2} className="text-center">
+                Actions
+              </th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {employees.length > 0 ? (
+              employees.map((employee, i) => (
+                <tr key={employee.emp_id}>
+                  <td>{i + 1}</td>
+                  <td>{employee.first_name}</td>
+                  <td>{employee.last_name}</td>
+                  <td>{employee.email}</td>
+                  <td>{employee.phone} </td>
+                  <td>{employee.project_name} </td>
+                  <td className="text-right">
+                    <button className="button muted-button" onClick={()=>handleEdit(employee)}>Edit</button>
+                  </td>
+                  <td className="text-left">
+                    <button className="button muted-button">Delete</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7}>No Employees</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>)}
+      
+      {editing && (
+        <>
+        <Edit selectedEmployee={selectedEmployee}/>
+        </>
+
+      )}
     </div>
   );
 };

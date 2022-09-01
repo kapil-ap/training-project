@@ -9,7 +9,7 @@ const Dashboard = () => {
   const employeesList = useEmpServices(
     fetch("http://localhost:3000/employee")
     );
-
+    console.log(employeesList);
   return (
     <div>
       <EmployeeList employees={employeesList} />

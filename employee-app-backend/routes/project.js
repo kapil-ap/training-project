@@ -44,7 +44,7 @@ router.get("/:project_id", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     const { project_name, client_name, manager_id } = req.body;
-    // console.log({first_name,last_name,email,phone,pid});
+    console.log({project_name,client_name,manager_id});
     await pool.query(
       `INSERT INTO emp_app.project (project_name,client_name,manager_id) VALUES ($1,$2,$3) RETURNING * ;`,
       [project_name, client_name, manager_id]
