@@ -127,8 +127,8 @@ const Addemployee = () => {
           {projects.length > 0 ? (
             projects.map((project) => (
               <option key={project.project_id} value={project.project_id}>
-                {" "}
-                {project.project_name}{" "}
+                
+                {project.project_name}
               </option>
             ))
           ) : (
