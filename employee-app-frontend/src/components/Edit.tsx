@@ -20,7 +20,7 @@ type Project = {
   manager_id: number;
 };
 type EditProps = {
-  selectedEmployee : Employee;
+  selectedEmployee: Employee;
 };
 
 const Edit = (props: EditProps) => {
@@ -41,20 +41,23 @@ const Edit = (props: EditProps) => {
   //     project_name: selectedEmployee[0]?.project_name,
   //   });
   // }, []);
-
+  const [patchRequestObject,setPatchRequestObject] = useState({});
   const projects: Project[] = useProjectServices(
     fetch("http://localhost:3000/project")
   );
 
-
+  
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    
-
     setEmployee({
       ...employee,
       [event.target.id]: event.target.value,
     });
-    console.log(employee);
+    setPatchRequestObject({
+      ...patchRequestObject,
+      [event.target.id]:event.target.value,
+    })
+    console.log(employee);  
+    console.log(patchRequestObject);
   };
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -62,7 +65,12 @@ const Edit = (props: EditProps) => {
       ...employee,
       [event.target.id]: Number(event.target.value),
     });
+    setPatchRequestObject({
+      ...patchRequestObject,
+      [event.target.id]: Number(event.target.value),
+    });
     console.log(employee);
+    console.log(patchRequestObject);
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -71,20 +79,23 @@ const Edit = (props: EditProps) => {
       let res = await fetch(
         `http://localhost:3000/employee/${props.selectedEmployee.emp_id}`,
         {
-          method: "PUT",
-          body: JSON.stringify(employee),
+          method: "PATCH",
+          body: JSON.stringify(patchRequestObject),
           headers: {
             "Content-type": "application/json; charset=UTF-8",
           },
         }
       );
-
+      
       let resJson = await res.json();
-      if (res.status === 201) {
+      
+      if (res.status === 200) {
         swal({
           title: "Updated",
           text: resJson,
           icon: "success",
+        }).then(()=> {
+          window.location.href = "/";
         });
       }
 
@@ -142,7 +153,7 @@ const Edit = (props: EditProps) => {
           onChange={handleChange}
         />
         <label htmlFor="project_name">Select Project</label>
-        <select name="projects" id="pid" onChange={handleSelectChange}>
+        <select name="projects" id="pid" value = {employee.pid} onChange={handleSelectChange}>
           {projects.length > 0 ? (
             projects.map((project) => (
               <option key={project.project_id} value={project.project_id}>

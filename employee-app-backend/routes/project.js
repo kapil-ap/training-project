@@ -44,19 +44,37 @@ router.get("/:project_id", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     const { project_name, client_name, manager_id } = req.body;
-    console.log({project_name,client_name,manager_id});
-    await pool.query(
-      `INSERT INTO emp_app.project (project_name,client_name,manager_id) VALUES ($1,$2,$3) RETURNING * ;`,
+    if(client_name === ''){
+      res.status(400).json("Client Name is required");
+      res.end();
+    }
+    if(project_name === ''){
+      res.status(400).json("Project Name is required");
+      res.end()
+    }
+    // console.log({project_name,client_name,manager_id});
+    const projectId = await pool.query(
+      `INSERT INTO emp_app.project (project_name,client_name,manager_id) VALUES ($1,$2,$3) RETURNING project_id ;`,
       [project_name, client_name, manager_id]
     );
+    console.log(projectId.rows);
+    await pool.query(
+      `UPDATE emp_app.employee SET pid = ${projectId.rows[0].project_id} WHERE emp_id = ${manager_id};`
+    )
+    
     res.status(201).json(`Project Added Successfully`);
   } catch (error) {
     if (error.code === "23505") {
-      res.status(400).json("Entered project name already exists");
+      if (error.constraint === "manager_id_unique")
+      res.status(400).json("One person can manage only one project");
+    else {
+      res.status(400).json("Entered Project name already exists");
     }
-    if (error.code === "23503") {
+    }
+    else if (error.code === "23503") {
       res.status(400).json("The manager entered is not present");
     }
+    
   }
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import swal from "sweetalert";
 import useEmpServices from "../services/useEmpServices";
 type Project = {
@@ -7,12 +7,14 @@ type Project = {
   manager_id: number;
 };
 type Employee = {
-  emp_id:number;
+  emp_id: number;
   first_name: string;
   last_name: string;
   email: string;
   phone: string;
   pid: number;
+  project_name: string;
+  manager_id: number;
 };
 
 const AddProject = () => {
@@ -22,13 +24,34 @@ const AddProject = () => {
     manager_id: 0,
   });
 
-  const managers: Employee[] = useEmpServices(
+  let managersAvailable = true;
+  let employees: Employee[] = useEmpServices(
     fetch("http://localhost:3000/employee")
   );
+  console.log("employees",employees);
+  let nonManagers:Employee[] =[]; 
+  const removeManagers = (employees: Employee[]) => {
+    for(let i = 0 ; i<employees.length ; i++){
+      if(employees[i].emp_id !== employees[i].manager_id)
+      {
+        nonManagers.push(employees[i]);
+      }
+    } 
+  };
+  removeManagers(employees);
+  console.log("nonManagers",nonManagers);
+  
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // const { name, value } = event.target;
-
+    if(nonManagers.length < 1){
+      swal({
+        title: "You don't have available managers",
+        icon: "error",
+      }).then(() => {
+        window.location.href = "/";
+      });
+    }
     setProject({
       ...project,
       [event.target.id]: event.target.value,
@@ -36,10 +59,17 @@ const AddProject = () => {
     console.log(project);
   };
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    
+    if(nonManagers.length < 1){
+      swal({
+        title: "You don't have managers",
+        icon: "error",
+      }).then(() => {
+        window.location.href = "/";
+      });
+    }
     setProject({
       ...project,
-      [event.target.id]:Number(event.target.value),
+      [event.target.id]: Number(event.target.value),
     });
     console.log(project);
   };
@@ -102,19 +132,19 @@ const AddProject = () => {
           value={project.client_name}
           onChange={handleChange}
         />
-        
-         <label htmlFor="manager_name">Select Manager</label>
+
+        <label htmlFor="manager_name">Select Manager</label>
         <select name="managers" id="manager_id" onChange={handleSelectChange}>
-          {managers.length > 0 ? (
-            managers.map((manager) => (
-              <option key={manager.emp_id} value={manager.emp_id}>
-                {manager.first_name} {manager.last_name}
+          {nonManagers.length > 0 ? (
+            nonManagers.map((nonManager) => (
+              <option key={nonManager.emp_id} value={nonManager.emp_id}>
+                {nonManager.first_name} {nonManager.last_name}
               </option>
             ))
           ) : (
-            <option>No Project</option>
+            <option>No Available Managers</option>
           )}
-          </select>
+        </select>
 
         <button type="submit"> Submit </button>
       </form>

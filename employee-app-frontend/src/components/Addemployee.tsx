@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import swal from "sweetalert";
 import useProjectServices from "../services/useProjectServices";
+import validator from 'validator';
+import { validateLocaleAndSetLanguage } from "typescript";
 type Employee = {
   first_name: string;
   last_name: string;
@@ -17,19 +19,21 @@ type Project = {
 };
 
 const Addemployee = () => {
+ 
+
   const [employee, setEmployee] = useState<Employee>({
     first_name:'',
     last_name: '',
     email: "",
     phone: "",
-    pid: 0,
+    pid:0,
   });
-
+  console.log(employee);
   const projects: Project[] = useProjectServices(
     fetch("http://localhost:3000/project")
   );
-  //  const projects:Project[] = [];
-
+  console.log(projects);
+  
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // const { name, value } = event.target;
 
@@ -51,6 +55,20 @@ const Addemployee = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if(!validator.isEmail(employee.email)){
+      swal({
+        title: "Entered Email is not correct",
+        icon: "error",
+      });
+      return;
+    }
+    if(!(employee.phone.length === 10)){
+      swal({
+        title: "Entered phone number is not correct",
+        icon: "error",
+      });
+      return;
+    }
     try {
       let res = await fetch("http://localhost:3000/employee/", {
         method: "POST",
@@ -66,6 +84,14 @@ const Addemployee = () => {
           title: "Created",
           text: resJson,
           icon: "success",
+        }).then(()=>{
+          setEmployee({
+            first_name:'',
+            last_name: '',
+            email: "",
+            phone: "",
+            pid:0,
+          })
         });
       }
 
@@ -113,14 +139,16 @@ const Addemployee = () => {
           placeholder="example@example.com"
           value={employee.email}
           onChange={handleChange}
+          className={validator.isEmail(employee.email) ? "is-success" : 'has-error'}
         />
         <label htmlFor="phone">Phone</label>
         <input
           type="text"
           id="phone"
-          placeholder="9910245896"
+          placeholder="10-Digit Number"
           value={employee.phone}
           onChange={handleChange}
+          className = {(employee.phone.length === 10) ? 'is-success' : 'has-error' }
         />
         <label htmlFor="project_name">Select Project</label>
         <select name="projects" id="pid" onChange={handleSelectChange}>

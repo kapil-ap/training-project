@@ -16,7 +16,7 @@ const pool = getPool();
 router.get("/", async (req, res, next) => {
   try {
     const getEmployees = await pool.query(
-      "SELECT e.emp_id, e.first_name, e.last_name, e.email, e.phone, e.pid ,p.project_name FROM emp_app.employee AS e INNER JOIN emp_app.project AS p ON e.pid = p.project_id;"
+      "SELECT e.emp_id, e.first_name, e.last_name, e.email, e.phone, e.pid ,p.project_name,p.manager_id FROM emp_app.employee AS e  RIGHT JOIN emp_app.project AS p ON e.pid = p.project_id;"
     );
     res.json(getEmployees.rows);
   } catch (error) {
@@ -60,8 +60,7 @@ router.get("/:emp_id", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     const { first_name, last_name, email, phone, pid } = req.body;
-  
-    
+
     await pool.query(
       `INSERT INTO emp_app.employee (first_name,last_name,email,phone,pid) VALUES ($1,$2,$3,$4,$5) RETURNING * ;`,
       [first_name, last_name, email, phone, pid]
@@ -87,7 +86,7 @@ router.put("/:emp_id", async (req, res, next) => {
   try {
     const { first_name, last_name, email, phone, pid } = req.body;
     const emp_id = req.params.emp_id;
-    console.log({first_name,last_name,email,phone,pid});
+    console.log({ first_name, last_name, email, phone, pid });
     await pool.query(
       `UPDATE emp_app.employee SET first_name=$1, last_name=$2, email=$3, phone=$4, pid=$5 WHERE emp_id=$6;`,
       [first_name, last_name, email, phone, pid, emp_id]
@@ -112,13 +111,10 @@ router.patch("/:emp_id", async (req, res, next) => {
     });
 
     query = query.slice(0, -1);
-    query += ` WHERE emp_id = ${req.params.emp_id};`;
+    query += ` WHERE emp_id = ${req.params.emp_id} RETURNING * ;`;
     console.log(query);
     await pool.query(query);
-
-    res.json(
-      `Employee with id = ${req.params.emp_id} has been updated successfully`
-    );
+    res.status(200).json("Employee has been updated successfully");
   } catch (error) {
     if (error.code === "23505") {
       if (error.constraint === "employee_phone_key")
@@ -136,25 +132,26 @@ router.patch("/:emp_id", async (req, res, next) => {
 router.delete("/:emp_id", async (req, res, next) => {
   try {
     let query = `DELETE FROM emp_app.employee WHERE emp_id = ${req.params.emp_id};`;
-    let emp_found = false;
-    await pool.query(query, (err, result) => {
-      if (err) {
-        res.status(500).json("Unable to reach the database");
-      } else {
-        result.rows.forEach((row) => {
-          emp_found = emp_id === row.emp_id;
-        });
+    // let emp_found = false;
+    // await pool.query(query, (err, result) => {
+    //   if (err) {
+    //     res.status(500).json("Unable to reach the database");
+    //   } else {
+    //     result.rows.forEach((row) => {
+    //       emp_found = emp_id === row.emp_id;
+    //     });
 
-        if (emp_found === false) {
-          res.status(404).json("Wrong employee details entered");
-        }
-      }
-    });
-    res.json(
-      `Employee with id = ${req.params.emp_id} has been deleted successfully`
+    //     if (emp_found === false) {
+    //       res.status(404).json("Wrong employee details entered");
+    //     }
+    //   }
+    // });
+    await pool.query(query);
+    res.status(200).json(
+      `Employee has been deleted successfully`
     );
   } catch (error) {
-    res.json(error);
+    res.status(500).json(error);
   }
 });
 
